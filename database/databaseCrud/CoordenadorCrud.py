@@ -4,7 +4,7 @@ from database.models.Usuario import Usuario
 from .Erros import ErroExcluir, ErroNaoEncontrado, ErroRegistrar, ErroAtualizar
 from sqlalchemy.orm import make_transient
 
-def criar_Coordenador(nome, email, senha, matricula):
+def criar_Coordenador(nome, email, senha, matricula, cpf):
     
     sessao = sessao_local()
     try:
@@ -12,7 +12,8 @@ def criar_Coordenador(nome, email, senha, matricula):
             matricula=matricula,
             nome=nome,
             email=email,
-            email_hash=Usuario.hash_email(email)
+            email_hash=Usuario.hash_email(email),
+            cpf=cpf
         )
         novo.definir_senha(senha)
         sessao.add(novo)

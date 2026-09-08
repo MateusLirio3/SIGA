@@ -9,9 +9,7 @@ class Curso(classe_base):
     __tablename__ = "cursos"
 
     id         = Column(TipoULID, primary_key=True, default=gerar_ulid)
-    id_turma   = Column(TipoULID, ForeignKey("turmas.id"), nullable=False)
     nome       = Column(String(256), nullable=False, unique=True)
-    descricao  = Column(String(256), nullable=False, unique=True)
 
     turmas = relationship(
         "Turma",

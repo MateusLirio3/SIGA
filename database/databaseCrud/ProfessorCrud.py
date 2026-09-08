@@ -4,7 +4,7 @@ from database.models.Usuario import Usuario
 from sqlalchemy.orm import make_transient
 from .Erros import ErroExcluir, ErroNaoEncontrado, ErroRegistrar, ErroAtualizar
 
-def criar_Professor(nome, email, senha, matricula):
+def criar_Professor(nome, email, senha, matricula, cpf):
     
     sessao = sessao_local()
     try:
@@ -12,7 +12,8 @@ def criar_Professor(nome, email, senha, matricula):
             matricula=matricula,
             nome=nome,
             email=email,
-            email_hash=Usuario.hash_email(email)
+            email_hash=Usuario.hash_email(email),
+            cpf=cpf
         )
         novo.definir_senha(senha)
         sessao.add(novo)

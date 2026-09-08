@@ -3,13 +3,12 @@ from sqlalchemy.orm import make_transient
 from database.models.Curso import Curso
 from .Erros import ErroExcluir, ErroNaoEncontrado, ErroRegistrar, ErroAtualizar
 
-def criar_Curso(nome, descricao):
+def criar_Curso(nome):
     
     sessao = sessao_local()
     try:
         novo = Curso(
-            nome=nome,
-            descricao=descricao
+            nome=nome
         )
         sessao.add(novo)
         sessao.commit()

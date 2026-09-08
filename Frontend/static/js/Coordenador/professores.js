@@ -1,15 +1,31 @@
-let dados = [
-    { id: 1, nome: 'Carlos Oliveira', matricula: 'P2024001', cpf: '111.222.333-44', disciplina: 'Matemática', status: 'Ativo', email: 'carlos@email.com', telefone: '(11) 99999-9999' },
-    { id: 2, nome: 'Mariana Souza', matricula: 'P2024002', cpf: '222.333.444-55', disciplina: 'Português', status: 'Ativo', email: 'mariana@email.com', telefone: '(11) 98888-8888' },
-    { id: 3, nome: 'Roberto Lima', matricula: 'P2024003', cpf: '333.444.555-66', disciplina: 'Física', status: 'Afastado', email: 'roberto@email.com', telefone: '(11) 97777-7777' },
-    { id: 4, nome: 'Patrícia Santos', matricula: 'P2024004', cpf: '444.555.666-77', disciplina: 'Química', status: 'Inativo', email: 'patricia@email.com', telefone: '(11) 96666-6666' },
-    { id: 5, nome: 'Fernanda Costa', matricula: 'P2024005', cpf: '555.666.777-88', disciplina: 'Biologia', status: 'Ativo', email: 'fernanda@email.com', telefone: '(11) 95555-5555' }
-];
-let nextId = 6;
+let Professores = [];
+let nextId = 1;
 
-function renderizar(lista) {
+async function carregarProfessores() {
+    try {
+        const resposta = await fetch('/API/GetProfessores', {
+            credentials: 'same-origin'
+        });
+
+        if (!resposta.ok) {
+            throw new Error('Resposta inválida da API');
+        }
+
+        const dados = await resposta.json();
+        Professores = Array.isArray(dados) ? dados : [];
+        renderizar(Professores);
+        return Professores;
+    } catch (erro) {
+        console.error('Falha ao carregar Professores!', erro);
+        Professores = [];
+        renderizar(Professores);
+        return [];
+    }
+}
+
+function renderizar(Professores) {
     const tbody = document.getElementById('tableBody');
-    const dadosFiltrados = lista || dados;
+    const dadosFiltrados = Professores;
 
     if (dadosFiltrados.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><i class="fas fa-user-slash"></i><p>Nenhum professor encontrado</p><button class="btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Adicionar</button></td></tr>`;
@@ -145,5 +161,5 @@ function showToast(message, type) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    renderizar(dados);
+    carregarProfessores();
 });

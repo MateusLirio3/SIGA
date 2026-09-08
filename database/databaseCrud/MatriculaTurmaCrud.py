@@ -4,16 +4,15 @@ from database.models.Aluno import Aluno
 from sqlalchemy.orm import make_transient
 from .Erros import ErroExcluir, ErroNaoEncontrado, ErroRegistrar, ErroAtualizar
 
-def criar_MatriculaTurma(id_Turma, id_aluno, data_Entrada, data_Saida, Status):
+def criar_MatriculaTurma(id_Turma, id_aluno, data_Entrada, status):
     
     sessao = sessao_local()
     try:
         novo = MatriculaTurma(
             id_turma=id_Turma,
-            id_aluno = id_aluno,
-            data_Entrada = data_Entrada,
-            data_Saida = data_Saida,
-            Status = Status
+            id_aluno=id_aluno,
+            data_Entrada=data_Entrada,
+            status=status
         )
         sessao.add(novo)
         sessao.commit()
@@ -22,7 +21,7 @@ def criar_MatriculaTurma(id_Turma, id_aluno, data_Entrada, data_Saida, Status):
         return novo
     except Exception as erro:
         sessao.rollback()
-        raise ErroRegistrar(f"Erro ao registrar MatriculaTurma (id={MatriculaTurma.id})") from erro
+        raise ErroRegistrar("Erro ao registrar MatriculaTurma") from erro
     finally:
         sessao.close()
 

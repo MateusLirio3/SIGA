@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, ForeignKey
 from database.models.Usuario import Usuario
 from .ulid_Generator import TipoULID, gerar_ulid
+from sqlalchemy.orm import relationship
 
 class Aluno(Usuario):
 
@@ -12,3 +13,8 @@ class Aluno(Usuario):
     __mapper_args__ = {
         "polymorphic_identity" : "Aluno"
     }
+
+    matriculas = relationship(
+        "MatriculaTurma",
+        back_populates="aluno"
+    )

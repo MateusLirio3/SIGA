@@ -13,10 +13,14 @@ class Turma(classe_base):
     id_curso   = Column(TipoULID, ForeignKey("cursos.id"), unique=True)
     nome       = Column(String(256), nullable=False)
     periodo    = Column(String(256), nullable=False)
-    descricao  = Column(String(256), nullable=False)
 
     curso = relationship(
         "Curso",
         foreign_keys="[Turma.id_curso]",
         back_populates="turmas"
+    )
+
+    matriculas = relationship(
+        "MatriculaTurma",
+        back_populates="turma"
     )

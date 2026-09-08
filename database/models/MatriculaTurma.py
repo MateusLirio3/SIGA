@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey, DATE
+from sqlalchemy import Column, ForeignKey, DATE, Enum
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from database.database_conection import classe_base
 from .ulid_Generator import TipoULID, gerar_ulid
@@ -14,15 +14,15 @@ class MatriculaTurma(classe_base):
     id_turma   = Column(TipoULID, ForeignKey("turmas.id"), nullable=False)
     id_aluno   = Column(TipoULID, ForeignKey("alunos.id"), nullable=False)
     data_Entrada = Column(DATE, nullable=False)
-    data_Saida = Column(DATE, nullable=False)
-    status : Mapped[Status]  = mapped_column(nullable=False)
+    data_Saida = Column(DATE, nullable=True)
+    status: Mapped[Status] = mapped_column(Enum(Status), nullable=False)
 
     turma = relationship(
-        "Turmas",
-        back_populates="turmas"
+        "Turma",
+        back_populates="matriculas"
     )
 
     aluno = relationship(
         "Aluno",
-        back_populates="alunos"
+        back_populates="matriculas"
     )

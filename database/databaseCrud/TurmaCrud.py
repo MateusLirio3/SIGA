@@ -3,7 +3,7 @@ from database.models.Turma import Turma
 from .Erros import ErroExcluir, ErroNaoEncontrado, ErroRegistrar, ErroAtualizar
 from sqlalchemy.orm import make_transient
 
-def criar_Turma(nome, periodo, descricao, id_curso):
+def criar_Turma(nome, periodo, id_curso):
     
     sessao = sessao_local()
     try:
@@ -11,7 +11,6 @@ def criar_Turma(nome, periodo, descricao, id_curso):
             id_curso=id_curso,
             nome=nome,
             periodo=periodo,
-            descricao=descricao
 
         )
         sessao.add(novo)
@@ -51,8 +50,6 @@ def buscar_Turma_por_nome(nome):
         resultado.id
         resultado.nome
         resultado.periodo
-        resultado.descricao
-
 
         sessao.expunge(resultado)
         make_transient(resultado)
@@ -94,6 +91,29 @@ def atualizar_Turma(nome, novo_nome=None, novo_periodo=None, nova_descricao=None
     except Exception as erro:
         sessao.rollback()
         raise ErroAtualizar(f"Erro ao atualizar Turma (nome={nome})") from erro
+    finally:
+        sessao.close()
+
+def adicionar_Curso(id_Turma, curso):
+    sessao = sessao_local()
+    try:
+        turma = sessao.query(Turma).filter(Turma.id == id_Turma).first()
+
+        if turma is None:
+            raise ErroNaoEncontrado(f"Erro ao buscar por turma (id={id_Turma})")
+
+        turma.id_curso = curso
+        sessao.commit()
+        sessao.refresh(turma)
+        sessao.expunge(turma)
+        return turma
+    except ErroNaoEncontrado:
+        raise
+    except Exception as erro:
+        sessao.rollback()
+        raise ErroAtualizar(
+            f"Erro ao adicionar o curso (curso={curso}) a turma (id={id_Turma})"
+        ) from erro
     finally:
         sessao.close()
 

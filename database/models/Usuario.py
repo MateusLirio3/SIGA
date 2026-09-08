@@ -15,6 +15,7 @@ class Usuario(classe_base):
     email_hash = Column(String(64), nullable=False, unique=True)
     senha      = Column(String(60), nullable=False)
     tipo       = Column(String(60), nullable = False)
+    cpf        = Column(String(11), nullable=False)
 
     __mapper_args__ = {
         "polymorphic_on" : tipo

@@ -1,5 +1,49 @@
 let alunos = [];
+let turmas = [];
 let nextId = 1;
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+async function carregarTokenCsrf() {
+    const resposta = await fetch('/get-token', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+    });
+    if (!resposta.ok) throw new Error('Não foi possível obter o token CSRF');
+    return resposta.headers.get('X-CSRF-Token');
+}
+
+async function carregarTurmas() {
+    try {
+        const resposta = await fetch('/API/GetTurmas', {
+            credentials: 'same-origin'
+        });
+        if (!resposta.ok) {
+            throw new Error('Resposta inválida da API');
+        }
+
+        const dados = await resposta.json();
+        turmas = Array.isArray(dados) ? dados : [];
+    } catch (erro) {
+        console.error('Falha ao carregar turmas!', erro);
+        turmas = [];
+    }
+
+    const selectTurma = document.getElementById('Select-turma');
+    if (selectTurma) {
+        selectTurma.innerHTML = '<option value="">Selecione uma turma</option>';
+        turmas.forEach(turma => {
+            const option = document.createElement('option');
+            option.value = turma.nome;
+            option.textContent = turma.nome;
+            selectTurma.appendChild(option);
+        });
+    }
+}
 
 async function carregarAlunos() {
     try {
@@ -47,14 +91,13 @@ function renderizarAlunos(lista) {
     var html = '';
     for (var i = 0; i < dados.length; i++) {
         var a = dados[i];
-        var statusClass = a.status === 'Ativo' ? 'ativo' : a.status === 'Pendente' ? 'pendente' : 'inativo';
+        var statusClass = a.status === 'Ativo' || a.status === 'ativo/a' ? 'ativo' : a.status === 'Pendente' || a.status === 'indefinido/a' ? 'pendente' : 'inativo';
         html += `
             <tr>
-                <td>${a.id}</td>
+                <td id='idAluno'>${a.id}</td>
                 <td><strong>${a.nome}</strong></td>
                 <td>${a.matricula}</td>
                 <td>${a.cpf}</td>
-                <td>${a.curso}</td>
                 <td>${a.turma || '-'}</td>
                 <td><span class="status-badge ${statusClass}">${a.status}</span></td>
                 <td>
@@ -82,16 +125,14 @@ function visualizarAluno(id) {
 
 function filtrar() {
     var search = document.getElementById('searchInput').value.toLowerCase();
-    var curso = document.getElementById('filterCurso').value;
     var status = document.getElementById('filterStatus').value;
 
     var filtrados = [];
     for (var i = 0; i < alunos.length; i++) {
         var a = alunos[i];
         var matchSearch = (a.nome || '').toLowerCase().includes(search) || (a.matricula || '').includes(search) || (a.cpf || '').includes(search);
-        var matchCurso = curso === '' || a.curso === curso;
         var matchStatus = status === '' || a.status === status;
-        if (matchSearch && matchCurso && matchStatus) {
+        if (matchSearch && matchStatus) {
             filtrados.push(a);
         }
     }
@@ -101,7 +142,6 @@ function filtrar() {
 
 function limparFiltros() {
     document.getElementById('searchInput').value = '';
-    document.getElementById('filterCurso').value = '';
     document.getElementById('filterStatus').value = '';
     renderizarAlunos(alunos);
 }
@@ -109,7 +149,7 @@ function limparFiltros() {
 function editarAluno(id) {
     var aluno = null;
     for (var i = 0; i < alunos.length; i++) {
-        if (alunos[i].id === id) {
+        if (String(alunos[i].id) === String(id)) {
             aluno = alunos[i];
             break;
         }
@@ -122,11 +162,9 @@ function editarAluno(id) {
     document.getElementById('nome').value = aluno.nome;
     document.getElementById('matricula').value = aluno.matricula;
     document.getElementById('cpf').value = aluno.cpf;
-    document.getElementById('curso').value = aluno.curso;
-    document.getElementById('turma').value = aluno.turma || '';
+    document.getElementById('Select-turma').value = aluno.turma || '';
     document.getElementById('status').value = aluno.status;
     document.getElementById('email').value = aluno.email || '';
-    document.getElementById('telefone').value = aluno.telefone || '';
 
     document.getElementById('modal').classList.add('ativo');
     document.body.style.overflow = 'hidden';
@@ -148,44 +186,46 @@ function fecharModal() {
     document.body.style.overflow = '';
 }
 
-function salvar(event) {
+async function salvar(event) {
     event.preventDefault();
 
-    var id = document.getElementById('itemId').value;
     var dados = {
+        id: document.getElementById('itemId').value || null,
         nome: document.getElementById('nome').value.trim(),
         matricula: document.getElementById('matricula').value.trim(),
         cpf: document.getElementById('cpf').value.trim(),
-        curso: document.getElementById('curso').value,
-        turma: document.getElementById('turma').value,
+        turma: document.getElementById('Select-turma').value,
         status: document.getElementById('status').value,
         email: document.getElementById('email').value.trim(),
-        telefone: document.getElementById('telefone').value.trim()
     };
+    const csrfToken = await carregarTokenCsrf();
+    var endpoint = dados.id ? '/API/PostEditarAluno' : '/API/PostAluno';
 
-    if (id) {
-        var index = -1;
-        for (var i = 0; i < alunos.length; i++) {
-            if (alunos[i].id === parseInt(id)) {
-                index = i;
-                break;
-            }
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            "X-CSRF-Token": csrfToken,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dados)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao salvar aluno');
         }
-        if (index !== -1) {
-            alunos[index] = { ...alunos[index], ...dados };
-            showToast('Aluno atualizado com sucesso!', 'success');
-        }
-    } else {
-        dados.id = nextId++;
-        alunos.push(dados);
-        showToast('Aluno cadastrado com sucesso!', 'success');
-    }
-
-    fecharModal();
-    renderizarAlunos(alunos);
+        return response.json();
+    })
+    .then(async data => {
+        showToast('Aluno "' + data.nome + '" salvo com sucesso!', 'success');
+        await carregarAlunos();
+        fecharModal();
+    })
+    .catch(error => {
+        console.error('Erro ao salvar aluno:', error);
+    });
 }
 
-function excluirAluno(id) {
+async function excluirAluno(id) {
     var aluno = null;
     for (var i = 0; i < alunos.length; i++) {
         if (alunos[i].id === id) {
@@ -195,15 +235,27 @@ function excluirAluno(id) {
     }
     if (!aluno) return;
     if (confirm('Tem certeza que deseja excluir "' + aluno.nome + '"?')) {
-        var novosAlunos = [];
-        for (var i = 0; i < alunos.length; i++) {
-            if (alunos[i].id !== id) {
-                novosAlunos.push(alunos[i]);
+        const csrfToken = await carregarTokenCsrf();
+        fetch('/API/DeleteAluno/' + id, {
+            method: 'DELETE',
+            headers: {
+                "X-CSRF-Token": csrfToken,
+                'Content-Type': 'application/json'
             }
-        }
-        alunos = novosAlunos;
-        renderizarAlunos(alunos);
-        showToast('Aluno "' + aluno.nome + '" excluído', 'error');
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao excluir aluno');
+            }
+            return response.json();
+        })
+        .then(async data => {
+            await carregarAlunos();
+            showToast('Aluno "' + aluno.nome + '" excluído', 'error');
+        })
+        .catch(error => {
+            console.error('Erro ao excluir aluno:', error);
+        });
     }
 }
 
@@ -221,5 +273,6 @@ function showToast(message, type) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    carregarTurmas();
     carregarAlunos();
 });
