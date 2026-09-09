@@ -8,7 +8,7 @@ from database.databaseCrud.AlunoCrud import (
     atualizar_dados_Aluno,
     deletar_Aluno
 )
-from database.databaseCrud.MatriculaTurmaCrud import criar_MatriculaTurma
+from database.databaseCrud.MatriculaTurmaCrud import criar_MatriculaTurma, listarUltimasMatriculas
 from database.databaseCrud.TurmaCrud import buscar_Turma_por_nome
 from database.models.Status import Status
 from datetime import date
@@ -94,3 +94,6 @@ async def editarAluno(dados: AlunoEdicao):
 async def removerAluno(id: str):
     return deletar_Aluno(id)
 
+@router.get('/GetUltimosAlunos', tags=['API','GET'])
+async def listarUltimosAlunos():
+    return listarUltimasMatriculas()

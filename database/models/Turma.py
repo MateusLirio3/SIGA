@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from database.database_conection import classe_base
 from .Curso import Curso
@@ -13,6 +13,7 @@ class Turma(classe_base):
     id_curso   = Column(TipoULID, ForeignKey("cursos.id"), unique=True)
     nome       = Column(String(256), nullable=False)
     periodo    = Column(String(256), nullable=False)
+    ano        = Column(Integer(), nullable=False )
 
     curso = relationship(
         "Curso",

@@ -1,9 +1,11 @@
 from database.database_conection import sessao_local
 from database.models.Turma import Turma
+from database.models.Curso import Curso
+from sqlalchemy.exc import IntegrityError
 from .Erros import ErroExcluir, ErroNaoEncontrado, ErroRegistrar, ErroAtualizar
 from sqlalchemy.orm import make_transient
 
-def criar_Turma(nome, periodo, id_curso):
+def criar_Turma(nome, periodo, id_curso, ano):
     
     sessao = sessao_local()
     try:
@@ -11,6 +13,7 @@ def criar_Turma(nome, periodo, id_curso):
             id_curso=id_curso,
             nome=nome,
             periodo=periodo,
+            ano = ano
 
         )
         sessao.add(novo)
@@ -64,33 +67,41 @@ def buscar_todos_Turmas():
     sessao = sessao_local()
     try:
         resultados = sessao.query(Turma).all()
-        for r in resultados:
-            sessao.expunge(r)
-        return resultados
+        return [
+            {
+                "id": item.id,
+                "nome": item.nome,
+                "curso": item.curso.nome if item.curso else None,
+                "periodo": item.periodo,
+                "alunos": len(item.matriculas),
+                "ano": item.ano
+            }
+            for item in resultados
+        ]
     finally:
         sessao.close()
 
-def atualizar_Turma(nome, novo_nome=None, novo_periodo=None, nova_descricao=None):
+def atualizar_Turma(id, novo_nome=None, novo_periodo=None, novo_curso=None):
     sessao = sessao_local()
     try:
-        Turma = sessao.query(Turma).filter(Turma.nome == nome).first()
-        if Turma is None:
-            raise ErroNaoEncontrado(f"Turma nao encontrado (nome={nome})")
+        turma = sessao.query(Turma).filter(Turma.id == id).first()
+        if turma is None:
+            raise ErroNaoEncontrado(f"Turma nao encontrado (id={id})")
         if novo_nome is not None:
-            Turma.nome = novo_nome
+            turma.nome = novo_nome
         if novo_periodo is not None:
-            Turma.periodo = novo_periodo
-        if nova_descricao is not None:
-            Turma.descricao = nova_descricao
+            turma.periodo = novo_periodo
+        if novo_curso is not None:
+            turma.id_curso = sessao.query(Curso).filter(Curso.nome == novo_curso).first().id
         sessao.commit()
-        sessao.refresh(Turma)
-        sessao.expunge(Turma)
-        return Turma
+        sessao.refresh(turma)
+        sessao.expunge(turma)
+        return turma
     except ErroNaoEncontrado:
         raise
     except Exception as erro:
         sessao.rollback()
-        raise ErroAtualizar(f"Erro ao atualizar Turma (nome={nome})") from erro
+        raise ErroAtualizar(f"Erro ao atualizar Turma (id={id})") from erro
     finally:
         sessao.close()
 
@@ -125,19 +136,31 @@ def contar_Turmas():
     finally:
         sessao.close()
 
-def deletar_turma(nome):
+def deletar_turma(id):
     sessao = sessao_local()
     try:
-        Turma = sessao.query(Turma).filter(Turma.nome == nome).first()
-        if Turma is None:
-            raise ErroNaoEncontrado(f"Turma nao encontrado (nome={nome})")
-        sessao.delete(Turma)
+        turma = sessao.query(Turma).filter(Turma.id == id).first()
+
+        if turma is None:
+            raise ErroNaoEncontrado(f"Turma nao encontrado (id={id})")
+
+        if turma.matriculas:
+            raise ErroExcluir(f"A turma possui alunos cadastrados nela.")
+
+        sessao.delete(turma)
         sessao.commit()
         return True
     except ErroNaoEncontrado:
-        raise
+        raise        
+
+    except IntegrityError as erro:
+        sessao.rollback()
+        raise ErroExcluir(
+            f"A turma possui matriculas cadastradas e nao pode ser excluida (id={id})"
+        ) from erro
+
     except Exception as erro:
         sessao.rollback()
-        raise ErroExcluir(f"Erro ao excluir Turma (nome={nome})") from erro
+        raise ErroExcluir(f"Erro ao excluir Turma (id={id})") from erro
     finally:
         sessao.close()

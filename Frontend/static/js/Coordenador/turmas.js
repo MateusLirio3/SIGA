@@ -1,5 +1,49 @@
 let turmas = [];
+let cursos = [];
 let nextId = 1;
+
+async function carregarCursos() {
+    try {
+        const resposta = await fetch('/API/GetCursos', {
+            credentials: 'same-origin'
+        });
+
+        if (!resposta.ok) {
+            throw new Error('Resposta inválida da API');
+        }
+
+        const dados = await resposta.json();
+        cursos = Array.isArray(dados) ? dados : [];
+        return cursos;
+    } catch (erro) {
+        console.error('Falha ao carregar cursos!', erro);
+        cursos = [];
+        return [];
+    }
+}
+
+async function renderizarCursos() {
+    const selectCurso = document.getElementById('filterCurso');
+    if (!selectCurso) {
+        console.error('Elemento selectCurso não encontrado!');
+        return;
+    }
+
+    const selectCursoModal = document.getElementById('curso');
+    if (!selectCursoModal) {
+        console.error('Elemento selectCursoModal não encontrado!');
+        return;
+    }
+
+
+    for (const curso of cursos) {
+        const option = document.createElement('option');
+        option.value = curso.nome;
+        option.textContent = curso.nome;
+        selectCurso.appendChild(option);
+        selectCursoModal.appendChild(option.cloneNode(true));
+    }
+}
 
 async function carregarTurmas() {
     try {
@@ -23,12 +67,21 @@ async function carregarTurmas() {
     }
 }
 
+async function carregarTokenCsrf() {
+    const resposta = await fetch('/get-token', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+    });
+    if (!resposta.ok) throw new Error('Não foi possível obter o token CSRF');
+    return resposta.headers.get('X-CSRF-Token');
+}
+
 function renderizarTurmas(lista) {
     const tbody = document.getElementById('tableBody');
     const dadosFiltrados = Array.isArray(lista) ? lista : turmas;
 
     if (!tbody) {
-        console.error('❌ tableBody não encontrado!');
+        console.error('tableBody não encontrado!');
         return;
     }
 
@@ -40,14 +93,13 @@ function renderizarTurmas(lista) {
     }
 
     tbody.innerHTML = dadosFiltrados.map(item => {
-        const statusClass = item.status === 'Ativa' ? 'ativa' : item.status === 'Concluída' ? 'concluida' : 'inativa';
         return `<tr>
             <td>${item.id}</td>
             <td><strong>${item.nome}</strong></td>
-            <td>${item.descricao}</td>
+            <td>${item.curso}</td>
             <td>${item.periodo}</td>
-            <td>${item.alunos}/${item.vagas}</td>
-            <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+            <td>${item.alunos}</td>
+            <td>${item.ano}</td>
             <td>
                 <button class="action-btn view" onclick="visualizar('${item.id}')"><i class="fas fa-eye"></i></button>
                 <button class="action-btn edit" onclick="editar('${item.id}')"><i class="fas fa-edit"></i></button>
@@ -103,19 +155,15 @@ function abrirModal(item) {
         btn.textContent = 'Atualizar';
         document.getElementById('itemId').value = item.id;
         document.getElementById('nome').value = item.nome;
-        document.getElementById('curso').value = item.descricao;
+        document.getElementById('curso').value = item.curso;
         document.getElementById('periodo').value = item.periodo;
-        document.getElementById('status').value = item.status;
         document.getElementById('ano').value = item.ano;
-        document.getElementById('vagas').value = item.vagas;
     } else {
         title.innerHTML = '<i class="fas fa-door-open"></i> Nova Turma';
         btn.textContent = 'Salvar';
         document.getElementById('form').reset();
         document.getElementById('itemId').value = '';
-        document.getElementById('status').value = 'Ativa';
         document.getElementById('ano').value = 2026;
-        document.getElementById('vagas').value = 40;
     }
 
     modal.classList.add('ativo');
@@ -133,42 +181,74 @@ function editar(id) {
     if (item) abrirModal(item);
 }
 
-function salvar(event) {
+async function salvar(event) {
     event.preventDefault();
-    const id = document.getElementById('itemId').value;
-    const dadosItem = {
+    const dados = {
+        id: document.getElementById('itemId').value || null,
         nome: document.getElementById('nome').value.trim(),
         curso: document.getElementById('curso').value,
         periodo: document.getElementById('periodo').value,
-        status: document.getElementById('status').value,
         ano: parseInt(document.getElementById('ano').value),
-        vagas: parseInt(document.getElementById('vagas').value),
-        alunos: 0
     };
 
-    if (id) {
-        const index = turmas.findIndex(item => String(item.id) === String(id));
-        if (index !== -1) {
-            turmas[index] = { ...turmas[index], ...dadosItem };
-            showToast('Turma atualizada com sucesso!', 'success');
-        }
-    } else {
-        dadosItem.id = String(nextId++);
-        turmas.push(dadosItem);
-        showToast('Turma cadastrada com sucesso!', 'success');
-    }
+    const csrfToken = await carregarTokenCsrf();
+    var endpoint = dados.id ? '/API/PostEditarTurma' : '/API/PostTurma';
 
-    fecharModal();
-    renderizarTurmas(turmas);
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            "X-CSRF-Token": csrfToken,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dados)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao salvar turma');
+        }
+        return response.json();
+    })
+    .then(async data => {
+        showToast('Turma "' + data.nome + '" salva com sucesso!', 'success');
+        await carregarTurmas();
+        fecharModal();
+    })
+    .catch(error => {
+        console.error('Erro ao salvar turma:', error);
+    });
 }
 
-function excluir(id) {
-    const item = turmas.find(item => String(item.id) === String(id));
-    if (!item) return;
-    if (confirm('Tem certeza que deseja excluir a turma "' + item.nome + '"?')) {
-        turmas = turmas.filter(item => String(item.id) !== String(id));
-        renderizarTurmas(turmas);
-        showToast('Turma "' + item.nome + '" excluída', 'error');
+async function excluir(id) {
+    var turma = null;
+    for (var i = 0; i < turmas.length; i++) {
+        if (turmas[i].id === id) {
+            turma = turmas[i];
+            break;
+        }
+    }
+    if (confirm('Tem certeza que deseja excluir "' + turma.nome + '"?')) {
+        const csrfToken = await carregarTokenCsrf();
+        fetch('/API/DeleteTurma/' + id, {
+            method: 'DELETE',
+            headers: {
+                "X-CSRF-Token": csrfToken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                showToast('Erro ao excluir turma. Verifique se a turma possui alunos cadastrados nela.', 'error');
+                throw new Error('Erro ao excluir turma');
+            }
+            return response.json();
+        })
+        .then(async data => {
+            await carregarTurmas();
+            showToast('Turma "' + turma.nome + '" excluída', 'error');
+        })
+        .catch(error => {
+            console.error('Erro ao excluir turma:', error);
+        });
     }
 }
 
@@ -185,4 +265,5 @@ function showToast(message, type) {
 
 document.addEventListener('DOMContentLoaded', function () {
     carregarTurmas();
+    carregarCursos().then(renderizarCursos);
 });

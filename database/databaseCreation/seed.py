@@ -25,6 +25,7 @@ COORDENADOR = {
 TURMA = {
     "nome" : "INF31",
     "periodo" : "Integral",
+    "ano" : 2026
 }
 
 CURSO = {
@@ -65,7 +66,8 @@ def criar_turma(modelo, dados):
         if turma is None:
             turma = modelo(
                 nome=dados["nome"],
-                periodo = dados["periodo"]
+                periodo = dados["periodo"],
+                ano = dados['ano']
             )
             sessao.add(turma)
             sessao.commit()

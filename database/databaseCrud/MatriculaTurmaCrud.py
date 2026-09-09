@@ -77,6 +77,28 @@ def buscar_HistoricoAluno_por_nome(nome_aluno):
     finally:
         sessao.close()
 
+def listarUltimasMatriculas():
+    sessao = sessao_local()
+
+    try:
+        ultimasMatriculas = sessao.query(MatriculaTurma).order_by(MatriculaTurma.data_Entrada).limit(5)
+        if ultimasMatriculas is None:
+            raise ErroNaoEncontrado(f"Erro ao retornar as matriculas mais recentes")
+
+        return [
+            {
+                "Turma": item.turma.nome if item.turma else None,
+                "Aluno": item.aluno.nome if item.aluno else None,
+                "Data_Entrada": item.data_Entrada,
+                "status": item.status
+            }
+            for item in ultimasMatriculas
+        ]
+    except ErroNaoEncontrado:
+        raise
+    finally:
+        sessao.close()
+
 def atualizar_MatriculaTurma(id_MatriculaTurma, nova_MatriculaTurma):
     sessao = sessao_local()
     try:

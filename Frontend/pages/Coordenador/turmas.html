@@ -24,10 +24,7 @@
             </div>
             <select id="filterCurso" onchange="filtrar()">
                 <option value="">Todos os cursos</option>
-                <option value="Engenharia de Software">Engenharia de Software</option>
-                <option value="Ciência da Computação">Ciência da Computação</option>
-                <option value="Sistemas de Informação">Sistemas de Informação</option>
-                <option value="Análise de Sistemas">Análise de Sistemas</option>
+
             </select>
             <select id="filterPeriodo" onchange="filtrar()">
                 <option value="">Todos os períodos</option>
@@ -54,7 +51,7 @@
                             <th>Curso</th>
                             <th>Período</th>
                             <th>Alunos</th>
-                            <th>Status</th>
+                            <th>Ano</th>
                             <th style="width:130px;">Ações</th>
                         </tr>
                     </thead>
@@ -81,10 +78,7 @@
                         <label>Curso *</label>
                         <select id="curso" required>
                             <option value="">Selecione</option>
-                            <option value="Engenharia de Software">Engenharia de Software</option>
-                            <option value="Ciência da Computação">Ciência da Computação</option>
-                            <option value="Sistemas de Informação">Sistemas de Informação</option>
-                            <option value="Análise de Sistemas">Análise de Sistemas</option>
+
                         </select>
                     </div>
                     <div class="form-group">
@@ -93,23 +87,12 @@
                             <option value="Matutino">Matutino</option>
                             <option value="Vespertino">Vespertino</option>
                             <option value="Noturno">Noturno</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="status">
-                            <option value="Ativa">Ativa</option>
-                            <option value="Inativa">Inativa</option>
-                            <option value="Concluída">Concluída</option>
+                            <option value="Integral">Integral</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Ano</label>
                         <input type="number" id="ano" placeholder="2026" value="2026">
-                    </div>
-                    <div class="form-group">
-                        <label>Vagas</label>
-                        <input type="number" id="vagas" placeholder="40" value="40">
                     </div>
                 </div>
                 <div class="modal-footer">
