@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from backend.permissoes import tem_permissao
 
-templates = Jinja2Templates(directory="frontend/pages/Coordenador")
+templates = Jinja2Templates(directory="Frontend/pages/Coordenador")
 
 router = APIRouter()
 
