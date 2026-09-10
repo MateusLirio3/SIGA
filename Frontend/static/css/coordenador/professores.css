@@ -284,6 +284,41 @@
     grid-column: 1 / -1;
 }
 
+.disciplinas-group {
+    grid-column: 1 / -1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.disciplinas-group legend {
+    padding: 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
+.disciplinas-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+}
+
+.disciplina-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.disciplina-option:hover {
+    background: #f5f9ff;
+    border-color: #90caf9;
+}
+
 .form-group label {
     font-size: 13px;
     font-weight: 600;

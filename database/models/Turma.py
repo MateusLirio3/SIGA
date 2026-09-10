@@ -25,3 +25,8 @@ class Turma(classe_base):
         "MatriculaTurma",
         back_populates="turma"
     )
+
+    disciplinas_turma = relationship(
+        "DisciplinaTurma",
+        back_populates="turma"
+    )

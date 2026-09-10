@@ -1,6 +1,6 @@
 const contAlunos = document.getElementById("contagemAlunos");
 const contProfessores = document.getElementById("contagemProfessores");
-// const contDisciplinas = document.getElementById("contagemDisciplinas");
+const contDisciplinas = document.getElementById("contagemDisciplinas");
 const contTurmas = document.getElementById("contagemTurmas");
 const ultimasMatriculas = document.getElementById("ultimasMatriculas");
 
@@ -15,11 +15,11 @@ function atualizarContagens() {
         .then(data => {
             contProfessores.textContent = data;
         });
-    // fetch("/API/GetDisciplinasCount")
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         contDisciplinas.textContent = data.quantidade;
-    //     });
+    fetch("/API/GetDisciplinasCount")
+        .then(response => response.json())
+        .then(data => {
+            contDisciplinas.textContent = data;
+        });
     fetch("/API/GetTurmasCount")
         .then(response => response.json())
         .then(data => {

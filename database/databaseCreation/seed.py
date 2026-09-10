@@ -4,6 +4,7 @@ from database.models.Coordenador import Coordenador
 from database.models.Usuario import Usuario
 from database.models.Turma import Turma
 from database.models.Curso import Curso
+from database.models.Disciplina import Disciplina
 from database.databaseCrud.TurmaCrud import criar_Turma
 
 ALUNO = {
@@ -31,6 +32,20 @@ TURMA = {
 CURSO = {
     "nome" : "Técnico em Informática"
 }
+
+CURSO2 = {
+    "nome" : "Técnico em eletrónica"
+}
+
+DISCIPLINAS = [
+    { "nome" : "Português"},
+    { "nome" : "Matemática"},
+    { "nome" : "História"},
+    { "nome" : "Banco de Dados"},
+    { "nome" : "Linguagem da Programação"},
+    { "nome" : "Geografia"},
+    { "nome" : "Modelagem de Dados"}
+]
 
 def criar_usuario_se_nao_existir(modelo, dados):
     sessao = sessao_local()
@@ -94,12 +109,34 @@ def criar_curso(modelo,dados):
         sessao.expunge(curso)
     finally:
         sessao.close()
+
+def criar_Disciplina(modelo,dados):
+    sessao = sessao_local()
+    try:
+        for i in range(len(dados)):
+            disciplina = sessao.query(Disciplina).filter(
+                Disciplina.nome == dados[i]["nome"]
+            ).first()
+
+            if disciplina is None:
+                disciplina = modelo(
+                    nome=dados[i]["nome"]
+                )
+                sessao.add(disciplina)
+                sessao.commit()
+                sessao.refresh(disciplina)
+            sessao.expunge(disciplina)
+    finally:
+        sessao.close()
+
 def executar_seed():
     classe_base.metadata.create_all(bind=motor)
     aluno = criar_usuario_se_nao_existir(Aluno, ALUNO)
     coordenador = criar_usuario_se_nao_existir(Coordenador, COORDENADOR)
     turma = criar_turma(Turma, TURMA)
     curso = criar_curso(Curso, CURSO)
+    curso2 = criar_curso(Curso, CURSO2)
+    disciplina = criar_Disciplina(Disciplina, DISCIPLINAS)
 
 if __name__ == "__main__":
     executar_seed()

@@ -18,3 +18,8 @@ class Aluno(Usuario):
         "MatriculaTurma",
         back_populates="aluno"
     )
+
+    notas = relationship(
+        "Nota",
+        back_populates="aluno"
+    )

@@ -16,11 +16,11 @@ class Nota(classe_base):
     valor     = Column(Float, nullable=False)
 
     disciplinaturma = relationship(
-        "Disciplinaturma",
-        back_populates="disciplinaTurma"
+        "DisciplinaTurma",
+        back_populates="nota"
     )
 
     aluno = relationship(
         "Aluno",
-        back_populates="alunos"
+        back_populates="notas"
     )

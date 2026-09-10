@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy.orm import relationship
 from database.models.Usuario import Usuario
 from .ulid_Generator import TipoULID, gerar_ulid
 
@@ -12,3 +13,8 @@ class Professor(Usuario):
     __mapper_args__ = {
         "polymorphic_identity" : "Professor"
     }
+
+    disciplinas_turma = relationship(
+        "DisciplinaTurma",
+        back_populates="professor"
+    )

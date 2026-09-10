@@ -22,12 +22,6 @@
                 <input type="text" id="searchInput" placeholder="Buscar por nome, matrícula ou CPF..."
                     onkeyup="filtrar()">
             </div>
-            <select id="filterStatus" onchange="filtrar()">
-                <option value="">Todos os status</option>
-                <option value="Ativo">Ativo</option>
-                <option value="Inativo">Inativo</option>
-                <option value="Afastado">Afastado</option>
-            </select>
             <button class="btn-filter" onclick="limparFiltros()">
                 <i class="fas fa-undo"></i> Limpar
             </button>
@@ -47,7 +41,6 @@
                             <th>Matrícula</th>
                             <th>CPF</th>
                             <th>Disciplina</th>
-                            <th>Status</th>
                             <th style="width:130px;">Ações</th>
                         </tr>
                     </thead>
@@ -72,31 +65,21 @@
                     </div>
                     <div class="form-group">
                         <label>Matrícula *</label>
-                        <input type="text" id="matricula" placeholder="Ex: P2024001" required>
+                        <input type="text" id="matricula" placeholder="Ex: 2025468749122" required maxlength="13">
                     </div>
                     <div class="form-group">
                         <label>CPF *</label>
-                        <input type="text" id="cpf" placeholder="000.000.000-00" required>
+                        <input type="text" id="cpf" placeholder="000.000.000-00" required maxlength="11">
                     </div>
-                    <div class="form-group">
-                        <label>Disciplina *</label>
-                        <input type="text" id="disciplina" placeholder="Ex: Matemática" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="status">
-                            <option value="Ativo">Ativo</option>
-                            <option value="Inativo">Inativo</option>
-                            <option value="Afastado">Afastado</option>
-                        </select>
-                    </div>
+                    <fieldset class="form-group disciplinas-group">
+                        <legend>Disciplinas</legend>
+                        <div id="disciplinas-container" class="disciplinas-options">
+                            <span>Carregando disciplinas...</span>
+                        </div>
+                    </fieldset>
                     <div class="form-group">
                         <label>Email</label>
                         <input type="email" id="email" placeholder="email@exemplo.com">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Telefone</label>
-                        <input type="text" id="telefone" placeholder="(00) 00000-0000">
                     </div>
                 </div>
                 <div class="modal-footer">

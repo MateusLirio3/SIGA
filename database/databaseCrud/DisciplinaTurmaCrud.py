@@ -1,5 +1,5 @@
 from database.database_conection import sessao_local
-from database.models.DisciplinaTurma import disciplinaTurma
+from database.models.DisciplinaTurma import DisciplinaTurma
 from sqlalchemy.orm import make_transient
 from .Erros import ErroExcluir, ErroNaoEncontrado, ErroRegistrar, ErroAtualizar
 
@@ -7,7 +7,7 @@ def criar_disciplinaTurma(id_Turma, id_disciplina, id_professor, id_nota):
     
     sessao = sessao_local()
     try:
-        novo = disciplinaTurma(
+        novo = DisciplinaTurma(
             id_turma=id_Turma,
             id_disciplina = id_disciplina,
             id_professor = id_professor,
@@ -20,14 +20,14 @@ def criar_disciplinaTurma(id_Turma, id_disciplina, id_professor, id_nota):
         return novo
     except Exception as erro:
         sessao.rollback()
-        raise ErroRegistrar(f"Erro ao registrar disciplinaTurma (id={disciplinaTurma.id})") from erro
+        raise ErroRegistrar(f"Erro ao registrar disciplinaTurma (id={DisciplinaTurma.id})") from erro
     finally:
         sessao.close()
 
 def buscar_todos_disciplinaTurmas():
     sessao = sessao_local()
     try:
-        resultados = sessao.query(disciplinaTurma).all()
+        resultados = sessao.query(DisciplinaTurma).all()
         for r in resultados:
             sessao.expunge(r)
         return resultados
@@ -37,7 +37,7 @@ def buscar_todos_disciplinaTurmas():
 def contar_disciplinaTurmas():
     sessao = sessao_local()
     try:
-        resultado = sessao.query(disciplinaTurma).count()
+        resultado = sessao.query(DisciplinaTurma).count()
         return resultado
     finally:
         sessao.close()
@@ -48,8 +48,8 @@ def buscar_disciplina_turma_por_turma(id_turma):
 
     try:
         resultados = (
-            sessao.query(disciplinaTurma)
-            .filter(disciplinaTurma.id_turma == id_turma)
+            sessao.query(DisciplinaTurma)
+            .filter(DisciplinaTurma.id_turma == id_turma)
             .all()
         )
 

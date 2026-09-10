@@ -11,24 +11,23 @@ class DisciplinaTurma(classe_base):
     id_turma   = Column(TipoULID, ForeignKey("turmas.id"), nullable=False)
     id_disciplina = Column (TipoULID, ForeignKey("disciplinas.id"), nullable=False)
     id_professor  = Column(TipoULID, ForeignKey("professores.id"), nullable=False)
-    id_nota  = Column(TipoULID, ForeignKey("notas.id"), nullable=False)
 
     turma = relationship(
-        "Turmas",
-        back_populates="turmas"
+        "Turma",
+        back_populates="disciplinas_turma"
     )
 
     disciplina = relationship(
         "Disciplina",
-        back_populates="disciplinas"
+        back_populates="disciplinas_turma"
     )
 
     professor = relationship(
         "Professor",
-        back_populates="professores"
+        back_populates="disciplinas_turma"
     )
 
     nota = relationship(
         "Nota",
-        back_populates="notas"
+        back_populates="disciplinaturma"
     )
